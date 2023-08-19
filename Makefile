@@ -25,10 +25,10 @@ include $(BOLOS_SDK)/Makefile.defines
 #        Mandatory configuration       #
 ########################################
 # Application name
-APPNAME = "Boilerplate"
+APPNAME = "Alea"
 
 # Application version
-APPVERSION_M = 2
+APPVERSION_M = 1
 APPVERSION_N = 0
 APPVERSION_P = 0
 APPVERSION = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
@@ -88,9 +88,11 @@ ENABLE_BLUETOOTH = 1
 ########################################
 #         NBGL custom features         #
 ########################################
-ENABLE_NBGL_QRCODE = 1
-#ENABLE_NBGL_KEYBOARD = 1
-#ENABLE_NBGL_KEYPAD = 1
+ENABLE_NBGL_QRCODE = 0
+ENABLE_NBGL_KEYBOARD = 0
+ENABLE_NBGL_KEYPAD = 0
+ENABLE_NBGL_PAGE = 1 # TODO: to remove at some point
+ENABLE_NBGL_USE_CASE = 1  # TODO: to remove at some point
 
 ########################################
 #          Features disablers          #

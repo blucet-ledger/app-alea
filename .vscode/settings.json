@@ -1,6 +1,10 @@
 {
     "files.associations": {
-        "*.h": "c"
+        "*.h": "c",
+        "variant": "c",
+        "chrono": "c",
+        "sstream": "c",
+        "__locale": "c"
     },
     "C_Cpp.clang_format_path": "/usr/bin/clang-format",
     "editor.formatOnSave": false,
