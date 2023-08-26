@@ -26,7 +26,7 @@
 
 #include "../globals.h"
 #include "menu.h"
-#include "coinflip.h"
+#include "draw.h"
 
 typedef enum {
   HOME_QUIT_APP_BUTTON_TOKEN = 0,
@@ -35,26 +35,7 @@ typedef enum {
   HOME_SHUFFLE_LIST_BUTTON_TOKEN
 } home_tokens_e;
 
-typedef enum {
-  DRAW_BACK_BUTTON_TOKEN = 0,
-  DRAW_FLIP_COIN_BUTTON_TOKEN
-} draw_tokens_e;
-
-typedef enum {
-  DRAW_STATE_READY,
-  DRAW_STATE_DRAWING,
-  DRAW_STATE_DONE
-} draw_states_e;
-
-typedef enum {
-  DRAW_TYPE_FLIP_COIN,
-  DRAW_TYPE_DICE_ROLL,
-  DRAW_TYPE_SHUFFLE_LIST
-} draw_types_e;
-
-static nbgl_layout_t* homeLayout;
-static nbgl_layout_t* drawLayout;
-static nbgl_layout_t* drawingLayout;
+static nbgl_layout_t* homeLayout = NULL;
 
 void app_quit(void) {
   os_sched_exit(-1);
@@ -76,7 +57,8 @@ void fillHomeLayout(nbgl_layout_t* layout) {
     .token = HOME_FLIP_COIN_BUTTON_TOKEN,
     .style = BLACK_BACKGROUND,
     .fittingContent = false,
-    .onBottom = false
+    .onBottom = false,
+    .tuneId = TUNE_TAP_CASUAL
   };
   nbgl_layoutAddButton(layout, &flipButtonInfo);
 
@@ -85,7 +67,8 @@ void fillHomeLayout(nbgl_layout_t* layout) {
     .token = HOME_ROLL_DICE_BUTTON_TOKEN,
     .style = BLACK_BACKGROUND,
     .fittingContent = false,
-    .onBottom = false
+    .onBottom = false,
+    .tuneId = TUNE_TAP_CASUAL
   };
   nbgl_layoutAddButton(layout, &rollButtonInfo);
 
@@ -94,99 +77,36 @@ void fillHomeLayout(nbgl_layout_t* layout) {
     .token = HOME_SHUFFLE_LIST_BUTTON_TOKEN,
     .style = BLACK_BACKGROUND,
     .fittingContent = false,
-    .onBottom = false
+    .onBottom = false,
+    .tuneId = TUNE_TAP_CASUAL
   };
   nbgl_layoutAddButton(layout, &shuffleButtonInfo);
 
   nbgl_layoutAddFooter(layout, "Quit Alea", HOME_QUIT_APP_BUTTON_TOKEN, TUNE_TAP_CASUAL);
 }
 
-void fillDrawLayout(nbgl_layout_t* layout, draw_types_e drawType) {
-  nbgl_layoutAddProgressIndicator(layout, 0, 0, true, DRAW_BACK_BUTTON_TOKEN, TUNE_TAP_CASUAL);
-
-  nbgl_layoutCenteredInfo_t centeredInfo = {
-        .text1 = "Heads or tails?",
-        .text2 = "Press and hold the coin\nto flip it.",
-        .icon = NULL,
-        .onTop = true,
-        .style = LARGE_CASE_INFO,
-        .offsetY = 0
-    };
-    nbgl_layoutAddCenteredInfo(layout, &centeredInfo);
-
-    nbgl_layoutButton_t flipButtonInfo = {
-      .text = "Flip",
-      .token = DRAW_FLIP_COIN_BUTTON_TOKEN,
-      .style = BLACK_BACKGROUND,
-      .fittingContent = true,
-      .onBottom = false,
-      .tuneId = TUNE_TAP_CASUAL
-    };
-  nbgl_layoutAddButton(layout, &flipButtonInfo);
-}
-
-void fillDrawingLayout(nbgl_layout_t* layout, draw_types_e drawType) {
-  nbgl_layoutAddSpinner(layout, "Tossing coin\ninto the air...", false);
-}
-
 static void homeLayoutTouchCallback(int token, uint8_t index) {
   if (token == HOME_QUIT_APP_BUTTON_TOKEN) {
     app_quit();
   } else if (token == HOME_FLIP_COIN_BUTTON_TOKEN) {
-    fillDrawLayout(drawLayout, DRAW_TYPE_FLIP_COIN);
-    nbgl_layoutDraw(drawLayout);
-    nbgl_refresh();
+    nbgl_layoutRelease(homeLayout);
+    drawDrawPage(DRAW_TYPE_FLIP_COIN, DRAW_STATE_READY, NULL);
   }
 }
 
-static void drawLayoutTouchCallback(int token, uint8_t index) {
-  if (token == DRAW_BACK_BUTTON_TOKEN) {
-    nbgl_layoutRelease(drawLayout);
+void drawHomePage() {
+    nbgl_layoutDescription_t layoutDescription = {
+      .modal = false,
+      .withLeftBorder = true,
+      .onActionCallback = &homeLayoutTouchCallback
+    };
+    homeLayout = nbgl_layoutGet(&layoutDescription);
     fillHomeLayout(homeLayout);
-    nbgl_layoutDraw(homeLayout);
-  } else if (token == DRAW_FLIP_COIN_BUTTON_TOKEN) {
-    // TODO
-  }
-}
-
-static void drawingTickerCallback(void) {
-  // TODO
+  nbgl_layoutDraw(homeLayout);
 }
 
 void ui_menu_main(void) {
-  // cx_rng_u32_range_func(1, 2, cx_rng_u32);
-
-  nbgl_layoutDescription_t homeLayoutDescription = {
-    .modal = false,
-    .withLeftBorder = true,
-    .onActionCallback = &homeLayoutTouchCallback
-  };
-  homeLayout = nbgl_layoutGet(&homeLayoutDescription);
-
-  nbgl_layoutDescription_t drawLayoutDescription = {
-    .modal = false,
-    .withLeftBorder = true,
-    .onActionCallback = &drawLayoutTouchCallback
-  };
-  drawLayout = nbgl_layoutGet(&drawLayoutDescription);
-
-  nbgl_screenTickerConfiguration_t tickerConfiguration = {
-    .tickerValue = 1600,
-    .tickerIntervale = 0,
-    .tickerCallback = &drawingTickerCallback
-  };
-
-  nbgl_layoutDescription_t drawingLayoutDescription = {
-    .modal = true,
-    .withLeftBorder = true,
-    .onActionCallback = NULL,
-    .ticker = tickerConfiguration
-  };
-  // drawingLayout = nbgl_layoutGet(&drawingLayoutDescription);
-
-
-  fillHomeLayout(homeLayout);
-  nbgl_layoutDraw(homeLayout);
+  drawHomePage();
 }
 
 #endif
