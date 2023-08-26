@@ -50,34 +50,34 @@ void ui_coin_flip(void) {
   };
   layout = nbgl_layoutGet(&layoutDescription);
   
-    nbgl_layoutAddProgressIndicator(
-        layout,
-        0,
-        0,
-        true,
-        BACK_BUTTON_TOKEN,
-        TUNE_TAP_CASUAL
-    );
+    // nbgl_layoutAddProgressIndicator(
+    //     layout,
+    //     0,
+    //     0,
+    //     true,
+    //     BACK_BUTTON_TOKEN,
+    //     TUNE_TAP_CASUAL
+    // );
 
-    nbgl_layoutCenteredInfo_t centeredInfo = {
-        .text1 = "Heads or tails?",
-        .text2 = "Press and hold the coin\nto flip it.",
-        .icon = NULL,
-        .onTop = true,
-        .style = LARGE_CASE_INFO,
-        .offsetY = 0
-    };
-    nbgl_layoutAddCenteredInfo(layout, &centeredInfo);
+    // nbgl_layoutCenteredInfo_t centeredInfo = {
+    //     .text1 = "Heads or tails?",
+    //     .text2 = "Press and hold the coin\nto flip it.",
+    //     .icon = NULL,
+    //     .onTop = true,
+    //     .style = LARGE_CASE_INFO,
+    //     .offsetY = 0
+    // };
+    // nbgl_layoutAddCenteredInfo(layout, &centeredInfo);
 
-  nbgl_layoutButton_t flipButtonInfo = {
-    .text = "Flip",
-    .token = FLIP_BUTTON_TOKEN,
-    .style = BLACK_BACKGROUND,
-    .fittingContent = true,
-    .onBottom = false,
-    .tuneId = TUNE_TAP_CASUAL
-  };
-  nbgl_layoutAddButton(layout, &flipButtonInfo);
+  // nbgl_layoutButton_t flipButtonInfo = {
+  //   .text = "Flip",
+  //   .token = FLIP_BUTTON_TOKEN,
+  //   .style = BLACK_BACKGROUND,
+  //   .fittingContent = true,
+  //   .onBottom = false,
+  //   .tuneId = TUNE_TAP_CASUAL
+  // };
+  // nbgl_layoutAddButton(layout, &flipButtonInfo);
 
     nbgl_layoutDraw(layout);
     nbgl_refresh();

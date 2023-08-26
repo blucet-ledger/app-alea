@@ -10,4 +10,5 @@
     "editor.formatOnSave": false,
     "python.terminal.activateEnvironment": false,
     "git.ignoreLimitWarning": true,
+    "cmake.configureOnOpen": true,
 }
