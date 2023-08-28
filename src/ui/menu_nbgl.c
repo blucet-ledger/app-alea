@@ -29,10 +29,10 @@
 #include "draw.h"
 
 typedef enum {
-  HOME_QUIT_APP_BUTTON_TOKEN = 0,
-  HOME_FLIP_COIN_BUTTON_TOKEN,
-  HOME_ROLL_DICE_BUTTON_TOKEN,
-  HOME_SHUFFLE_LIST_BUTTON_TOKEN
+  QUIT_APP_BUTTON_TOKEN = 0,
+  FLIP_COIN_BUTTON_TOKEN,
+  ROLL_DICE_BUTTON_TOKEN,
+  SHUFFLE_LIST_BUTTON_TOKEN
 } home_tokens_e;
 
 static nbgl_layout_t* homeLayout = NULL;
@@ -54,7 +54,7 @@ void fillHomeLayout(nbgl_layout_t* layout) {
 
   nbgl_layoutButton_t flipButtonInfo = {
     .text = "Flip a coin",
-    .token = HOME_FLIP_COIN_BUTTON_TOKEN,
+    .token = FLIP_COIN_BUTTON_TOKEN,
     .style = BLACK_BACKGROUND,
     .fittingContent = false,
     .onBottom = false,
@@ -64,7 +64,7 @@ void fillHomeLayout(nbgl_layout_t* layout) {
 
   nbgl_layoutButton_t rollButtonInfo = {
     .text = "Roll a dice",
-    .token = HOME_ROLL_DICE_BUTTON_TOKEN,
+    .token = ROLL_DICE_BUTTON_TOKEN,
     .style = BLACK_BACKGROUND,
     .fittingContent = false,
     .onBottom = false,
@@ -74,7 +74,7 @@ void fillHomeLayout(nbgl_layout_t* layout) {
 
   nbgl_layoutButton_t shuffleButtonInfo = {
     .text = "Shuffle a list",
-    .token = HOME_SHUFFLE_LIST_BUTTON_TOKEN,
+    .token = SHUFFLE_LIST_BUTTON_TOKEN,
     .style = BLACK_BACKGROUND,
     .fittingContent = false,
     .onBottom = false,
@@ -82,15 +82,17 @@ void fillHomeLayout(nbgl_layout_t* layout) {
   };
   nbgl_layoutAddButton(layout, &shuffleButtonInfo);
 
-  nbgl_layoutAddFooter(layout, "Quit Alea", HOME_QUIT_APP_BUTTON_TOKEN, TUNE_TAP_CASUAL);
+  nbgl_layoutAddFooter(layout, "Quit Alea", QUIT_APP_BUTTON_TOKEN, TUNE_TAP_CASUAL);
 }
 
 static void homeLayoutTouchCallback(int token, uint8_t index) {
-  if (token == HOME_QUIT_APP_BUTTON_TOKEN) {
+  if (token == QUIT_APP_BUTTON_TOKEN) {
     app_quit();
-  } else if (token == HOME_FLIP_COIN_BUTTON_TOKEN) {
+  } else if (token == FLIP_COIN_BUTTON_TOKEN) {
     nbgl_layoutRelease(homeLayout);
     drawDrawPage(DRAW_TYPE_FLIP_COIN, DRAW_STATE_READY, NULL);
+  } else if (token == ROLL_DICE_BUTTON_TOKEN) {
+    drawDrawPage(DRAW_TYPE_DICE_ROLL, DRAW_STATE_READY, NULL);
   }
 }
 
