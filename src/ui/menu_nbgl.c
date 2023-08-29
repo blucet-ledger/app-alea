@@ -20,6 +20,7 @@
 
 #include "os.h"
 #include "glyphs.h"
+#include "nbgl_use_case.h"
 #include "nbgl_layout.h"
 #include "os_io_seproxyhal.h"
 #include "lcx_rng.h"
@@ -30,6 +31,7 @@
 
 typedef enum {
   QUIT_APP_BUTTON_TOKEN = 0,
+  INFO_BUTTON_TOKEN,
   FLIP_COIN_BUTTON_TOKEN,
   ROLL_DICE_BUTTON_TOKEN,
   SHUFFLE_LIST_BUTTON_TOKEN
@@ -42,13 +44,15 @@ void app_quit(void) {
 }
 
 void fillHomeLayout(nbgl_layout_t* layout) {
+  nbgl_layoutAddTopRightButton(layout, &C_info_i_32px, INFO_BUTTON_TOKEN, TUNE_TAP_CASUAL);
+
   nbgl_layoutCenteredInfo_t centeredInfo = {
     .text1 = APPNAME,
     .text2 = "Spice up your decisions\nwith true randomness.",
     .icon = NULL,
     .onTop = true,
     .style = LARGE_CASE_INFO,
-    .offsetY = 40
+    .offsetY = 0
   };
   nbgl_layoutAddCenteredInfo(layout, &centeredInfo);
 
@@ -85,9 +89,35 @@ void fillHomeLayout(nbgl_layout_t* layout) {
   nbgl_layoutAddFooter(layout, "Quit Alea", QUIT_APP_BUTTON_TOKEN, TUNE_TAP_CASUAL);
 }
 
+static const char* const INFO_TYPES[] = {"Version", "Developer"};
+static const char* const INFO_CONTENTS[] = {APPVERSION, "Benoit Lucet"};
+
+static bool nav_callback(uint8_t page, nbgl_pageContent_t* content) {
+    UNUSED(page);
+    content->type = INFOS_LIST;
+    content->infosList.nbInfos = 2;
+    content->infosList.infoTypes = (const char**) INFO_TYPES;
+    content->infosList.infoContents = (const char**) INFO_CONTENTS;
+    return true;
+}
+
+void ui_menu_about() {
+    nbgl_useCaseSettings(
+        "About " APPNAME,
+        0,
+        1,
+        true,
+        ui_menu_main,
+        nav_callback,
+        NULL
+    );
+}
+
 static void homeLayoutTouchCallback(int token, uint8_t index) {
   if (token == QUIT_APP_BUTTON_TOKEN) {
     app_quit();
+  } else if (token == INFO_BUTTON_TOKEN) {
+    ui_menu_about();
   } else if (token == FLIP_COIN_BUTTON_TOKEN) {
     nbgl_layoutRelease(homeLayout);
     drawDrawPage(DRAW_TYPE_FLIP_COIN, DRAW_STATE_READY, NULL);

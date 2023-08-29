@@ -1,6 +1,7 @@
 #include <string.h>
 // #include "lcx_rng.h"
 #include "os_random.h"
+#include "glyphs.h"
 
 #include "draw.h"
 #include "menu.h"
@@ -20,6 +21,7 @@ static draw_types_e currentDrawType;
 
 typedef enum {
   BACK_BUTTON_TOKEN = 0,
+  SETTINGS_BUTTON_TOKEN,
   DRAW_BUTTON_TOKEN,
   NEW_DRAW_BUTTON_TOKEN
 } draw_tokens_e;
@@ -97,15 +99,19 @@ void drawDrawingPage() {
     nbgl_refreshSpecial(FULL_COLOR_PARTIAL_REFRESH);
 }
 
-void fillDrawLayout(nbgl_layout_t* layout, draw_types_e drawType, draw_states_e drawState, draw_result_t* result) {
+void fillDrawLayout(nbgl_layout_t* layout, draw_states_e drawState, draw_result_t* result) {
   nbgl_layoutAddProgressIndicator(layout, 0, 0, true, BACK_BUTTON_TOKEN, TUNE_TAP_CASUAL);
 
+  if (currentDrawType == DRAW_TYPE_DICE_ROLL && drawState == DRAW_STATE_READY) {
+    nbgl_layoutAddTopRightButton(layout, &C_wheel32px, SETTINGS_BUTTON_TOKEN, TUNE_TAP_CASUAL);
+  }
+  
   if (drawState == DRAW_STATE_READY) {
     nbgl_layoutCenteredInfo_t centeredInfo = {
-        .text1 = drawType == DRAW_TYPE_FLIP_COIN
+        .text1 = currentDrawType == DRAW_TYPE_FLIP_COIN
           ? "Heads or tails?"
           : "Six-sided dice",
-        .text2 = drawType == DRAW_TYPE_FLIP_COIN
+        .text2 = currentDrawType == DRAW_TYPE_FLIP_COIN
           ? "Press and hold the coin\nto flip it."
           : "Press and hold the dice\nto roll it.",
         .icon = NULL,
@@ -116,7 +122,7 @@ void fillDrawLayout(nbgl_layout_t* layout, draw_types_e drawType, draw_states_e 
     nbgl_layoutAddCenteredInfo(layout, &centeredInfo);
 
     nbgl_layoutButton_t flipButtonInfo = {
-      .text = drawType == DRAW_TYPE_FLIP_COIN
+      .text = currentDrawType == DRAW_TYPE_FLIP_COIN
         ? "Flip"
         : "Roll",
       .token = DRAW_BUTTON_TOKEN,
@@ -128,7 +134,7 @@ void fillDrawLayout(nbgl_layout_t* layout, draw_types_e drawType, draw_states_e 
     nbgl_layoutAddButton(layout, &flipButtonInfo);
 
   } else if (drawState == DRAW_STATE_DONE) {
-    if (drawType == DRAW_TYPE_FLIP_COIN) {
+    if (currentDrawType == DRAW_TYPE_FLIP_COIN) {
       if (result->value == 0) {
         snprintf(drawResultStr, DRAW_RESULT_MAX_STR_SIZE, "Heads");
       } else if (result->value == 1) {
@@ -137,7 +143,7 @@ void fillDrawLayout(nbgl_layout_t* layout, draw_types_e drawType, draw_states_e 
         // TODO: some kind of crash?
         // assert(false);
       }
-    } else if (drawType == DRAW_TYPE_DICE_ROLL) {
+    } else if (currentDrawType == DRAW_TYPE_DICE_ROLL) {
       # if TEST_MODE
         snprintf(
           drawResultStr,
@@ -167,7 +173,7 @@ void fillDrawLayout(nbgl_layout_t* layout, draw_types_e drawType, draw_states_e 
 
     nbgl_layoutAddFooter(
       layout,
-      drawType == DRAW_TYPE_FLIP_COIN ? "New flip" : "New roll",
+      currentDrawType == DRAW_TYPE_FLIP_COIN ? "New flip" : "New roll",
       NEW_DRAW_BUTTON_TOKEN,
       TUNE_TAP_CASUAL
     );
@@ -194,6 +200,6 @@ void drawDrawPage(draw_types_e drawType, draw_states_e drawState, draw_result_t*
         .onActionCallback = &drawLayoutTouchCallback
     };
     drawLayout = nbgl_layoutGet(&layoutDescription);
-    fillDrawLayout(drawLayout, drawType, drawState, result);
+    fillDrawLayout(drawLayout, drawState, result);
     nbgl_layoutDraw(drawLayout);
 }
