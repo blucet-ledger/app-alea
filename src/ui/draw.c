@@ -1,10 +1,20 @@
 #include <string.h>
-// #include "lcx_rng.h"
 #include "os_random.h"
 #include "glyphs.h"
+#include "nbgl_use_case.h"
+#include "os_pic.h"
+#include "os_nvm.h"
 
 #include "draw.h"
 #include "menu.h"
+
+#define N_storage (*(volatile internalStorage_t *) PIC(&N_storage_real))
+
+typedef struct internalStorage_s {
+    uint8_t diceSides;
+} internalStorage_t;
+
+const internalStorage_t N_storage_real;
 
 #define TEST_MODE 0
 #define TEST_LENGTH 10000
@@ -23,8 +33,13 @@ typedef enum {
   BACK_BUTTON_TOKEN = 0,
   SETTINGS_BUTTON_TOKEN,
   DRAW_BUTTON_TOKEN,
-  NEW_DRAW_BUTTON_TOKEN
+  NEW_DRAW_BUTTON_TOKEN,
+  RADIO_BUTTON_TOKEN
 } draw_tokens_e;
+
+enum {
+  SETTINGS_RADIO_TOKEN = FIRST_USER_TOKEN
+};
 
 void fillDrawingLayout(nbgl_layout_t* layout) {
     // TODO condition text on draw type
@@ -41,6 +56,10 @@ void fillDrawingLayout(nbgl_layout_t* layout) {
     // nbgl_layoutAddSpinner(layout, "Processing...", false);
 }
 
+// D4: 1 buffer, mask for 2 bits
+// D6: 3 buffers, modulo 6 (default)
+// D12: 3 buffers, modulo 12
+// D20: 5 buffers, modulo 20
 uint32_t drawRandom(draw_types_e drawType) {
   uint32_t result = 0;
 
@@ -48,7 +67,7 @@ uint32_t drawRandom(draw_types_e drawType) {
     uint8_t buffer[1];
     cx_get_random_bytes(buffer, 1);
     result = (buffer[0] & 0x01);
-  } else if (currentDrawType == DRAW_TYPE_DICE_ROLL) {
+  } else {
     uint8_t buffer[3];
     cx_get_random_bytes(buffer, 3);
     for (size_t i = 0; i < 3; i++) {
@@ -56,7 +75,6 @@ uint32_t drawRandom(draw_types_e drawType) {
     }
     result = result % 6;
   }
-
   return result;
 }
 
@@ -180,10 +198,63 @@ void fillDrawLayout(nbgl_layout_t* layout, draw_states_e drawState, draw_result_
   } 
 }
 
+static bool navCallback(uint8_t page, nbgl_pageContent_t* content) {
+    // TODO: assert page always is 0?
+    const char* diceTypes[4] = {"Four-sided dice", "Six-sided dice", "Twelve-sided dice", "Twenty-sided dice"};
+    nbgl_layoutRadioChoice_t radioLayout = {
+        .nbChoices = 4,
+        .initChoice = 1,
+        .token = SETTINGS_RADIO_TOKEN,
+        .names = diceTypes
+    };
+    content->type = CHOICES_LIST;
+    content->choicesList = (nbgl_layoutRadioChoice_t) radioLayout;
+
+    return false;
+}
+
+static void controlsCallback(int token, uint8_t index) {
+    // TODO: needs condition on token?
+    uint8_t diceSides = 0;
+    switch (index) {
+        case 0:
+            diceSides = 4;
+            break;
+        case 1:
+            diceSides = 6;
+            break;
+        case 2:
+            diceSides = 12;
+            break;
+        case 3:
+            diceSides = 20;
+            break;
+    }
+    nvm_write((void*) &N_storage.diceSides, (void*) &diceSides, sizeof(uint8_t));
+}
+
+void drawDefaultDiceRollPage(void) {
+  drawDrawPage(DRAW_TYPE_DICE_ROLL, DRAW_STATE_READY, NULL);
+}
+
+void ui_diceroll_settings(void) {
+  nbgl_useCaseSettings(
+    "Dice type",
+    0,
+    1,
+    true,
+    drawDefaultDiceRollPage,
+    navCallback,
+    controlsCallback
+  );
+}
+
 static void drawLayoutTouchCallback(int token, uint8_t index) {
   if (token == BACK_BUTTON_TOKEN) {
     nbgl_layoutRelease(drawLayout);
     ui_menu_main();
+  } else if (token == SETTINGS_BUTTON_TOKEN) {
+    ui_diceroll_settings();
   } else if (token == DRAW_BUTTON_TOKEN) {
     drawDrawingPage();
   } else if (token == NEW_DRAW_BUTTON_TOKEN) {

@@ -28,6 +28,7 @@
 #include "../globals.h"
 #include "menu.h"
 #include "draw.h"
+#include "shuffle.h"
 
 typedef enum {
   QUIT_APP_BUTTON_TOKEN = 0,
@@ -123,6 +124,8 @@ static void homeLayoutTouchCallback(int token, uint8_t index) {
     drawDrawPage(DRAW_TYPE_FLIP_COIN, DRAW_STATE_READY, NULL);
   } else if (token == ROLL_DICE_BUTTON_TOKEN) {
     drawDrawPage(DRAW_TYPE_DICE_ROLL, DRAW_STATE_READY, NULL);
+  } else if (token == SHUFFLE_LIST_BUTTON_TOKEN) {
+    drawShufflePage();
   }
 }
 
